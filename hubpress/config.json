@@ -1,10 +1,32 @@
 {
   "meta": {
-    "username": "put your username here",
-    "repositoryName": "put your repository name here",
-    "branch": "master"
+    "username": "jtanguy",
+    "repositoryName": "blog-hubpress",
+    "branch": "master",
+    "cname": "jtanguy.me"
   },
   "theme": {
-    "name": "Casper"
+    "name": "casper"
+  },
+  "urls": {
+    "site": "http://jtanguy.me",
+    "hubpress": "http://jtanguy.me",
+    "theme": "//jtanguy.me/themes/casper",
+    "images": "http://jtanguy.me/images"
+  },
+  "initialisationConfigComponent": {
+    "name": "initialise-configuration",
+    "computed": {},
+    "methods": {},
+    "staticRenderFns": [
+      null,
+      null,
+      null
+    ],
+    "_compiled": true,
+    "beforeCreate": [
+      null
+    ],
+    "_Ctor": {}
   }
 }
