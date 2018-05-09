@@ -1,1 +1,211 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Untitled RSS Feed]]></title><description><![CDATA[Untitled RSS Feed]]></description><link>http://jtanguy.me</link><generator>RSS for Node</generator><lastBuildDate>Wed, 09 May 2018 13:02:45 GMT</lastBuildDate><atom:link href="http://jtanguy.me/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl></channel></rss>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Untitled RSS Feed]]></title><description><![CDATA[Untitled RSS Feed]]></description><link>http://jtanguy.me</link><generator>RSS for Node</generator><lastBuildDate>Wed, 09 May 2018 13:18:16 GMT</lastBuildDate><atom:link href="http://jtanguy.me/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Installing NixOS on a XPS 9560]]></title><description><![CDATA[<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>I recently bought a <a href="http://www.dell.com/us/business/p/xps-15-9560-laptop/pd?oc=cax15w10p7s1610&amp;model_id=xps-15-9560-laptop">XPS 9560</a> from Dell, and I am enjoying it so far. This laptop is an early 2017 model, so documentation for installing NixOS on it was scarce.</p>
+</div>
+<div class="paragraph">
+<p>With the help of <a href="https://www.reddit.com/r/Dell/comments/5r2xbe/advice_for_linuxwindows_dual_boot_on_xps_9560_for/">some</a> <a href="https://bbs.archlinux.org/viewtopic.php?id=223056">posts</a>, I managed to install NixOS on it. Here is the general config with some tips along the way.</p>
+</div>
+<div class="paragraph">
+<p><strong>Update</strong>: Domen Kožar pointed me out on Twitter to another config, with a more elaborate setup with LUKS and such : <a href="https://gist.github.com/grahamc/fba67370053acc01ac216a6e4b73d308" class="bare">https://gist.github.com/grahamc/fba67370053acc01ac216a6e4b73d308</a></p>
+</div>
+<div class="paragraph">
+<p>I know that my config is not perfect and can be improved upon, but it is fine for me atm.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_initial_setup">Initial setup</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>I decided not to wipe out the preinstalled Windows 10, so I decided to shrink the main partition as much as I could.</p>
+</div>
+<div class="paragraph">
+<p>After backing up windows on a live key and making sure that all drivers but Nvidia were up to date, I went into the BIOS for some configuration:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Disable Secure Boot. I don&#8217;t think it&#8217;s possible to install NixOS with it.</p>
+</li>
+<li>
+<p>Change the SSD controller from RAID to AHCI. <s>This breaks the existing windows install; I looked for a way to install an AHCI driver for windows, with no luck yet.</s></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Update</strong>: I just stumbled upon a <a href="https://www.reddit.com/r/Dell/comments/66fr15/xps_15_9560_w_samsung_pm961_had_raid_not_ahci/">reddit post</a> which lists exactly the steps needed to make Windows install the AHCI drivers automatically. Here is the updated procedure I followed:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>In the windows admin command prompt, run <code>bcdedit /set {current} safeboot minimal</code></p>
+</li>
+<li>
+<p>Reboot and go into the BIOS configuration</p>
+</li>
+<li>
+<p>Disable Secure Boot</p>
+</li>
+<li>
+<p>Change the SSD controller to AHCI</p>
+</li>
+<li>
+<p>Reboot. Windows will boot into safe mode</p>
+</li>
+<li>
+<p>In the windows admin command prompt, run <code>bcdedit /deletevalue {current} safeboot</code></p>
+</li>
+<li>
+<p>Reboot. Windows will reconfigure itself for AHCI.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Then it was time for the setup.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_network">Network</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The NixOS liveUSB I used at the time didn&#8217;t have the drivers I needed for my Wifi card. I borrowed a USB-C to Ethernet adapter from a friend and kept on going.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_graphics">Graphics</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This one gave me some troubles.
+First, I blacklisted <em>nouveau</em> kernel modules, just for precaution, and configured <em>bumblebee</em>, but my machine froze every time I tried to start the X server.</p>
+</div>
+<div class="paragraph">
+<p>Apparently, if you turn off or on the nvidia graphics card, the system hard freezes. I chose to use the <em>non-free</em> Nvidia drivers coupled with <em>bumblebee</em>, with the <code>hardware.bumblebee.pmMethod</code> option set to <code>none</code> (it requires switching on the <code>nixos-unstable</code> channel first).</p>
+</div>
+<div class="paragraph">
+<p>I am aware that this setup is not the most battery-efficient one, but given the amount of documentation at the time and given that it works well enough, I decided not to try to improve it.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_bluetooth">Bluetooth</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>I did not investigate too much into bluetooth, but I might try again some day.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_fingerprint_reader">Fingerprint reader</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>My model was shipped with a fingerprint reader, but at the time of this writing, it is still not supported by <code>fprintd</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_protip_putting_work_related_config_in_a_separate_file">Protip: putting work-related config in a separate file</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It&#8217;s useful to separate purely work-related stuff from the rest, this way you can share your config with your colleagues and it makes the cleanup easier.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tl_dr">TL;DR</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Here is the full configuration</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-nix" data-lang="nix">{ config, pkgs, ... }:
+{
+  imports = [
+      ./hardware-configuration.nix # Hardware scan
+      ./valwin/configuration.nix   # Work-related stuff
+    ];
+
+  # Use the systemd-boot EFI boot loader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.blacklistedKernelModules = [ "nouveau" "bbswitch" ];
+
+  # Nvidia is hard
+  nixpkgs.config.allowUnfree = true;
+  hardware.bumblebee.enable = true;
+  hardware.bumblebee.pmMethod = "none"; # Needs nixos-unstable
+  boot.extraModulePackages = [ pkgs.linuxPackages.nvidia_x11 ];
+
+  hardware.pulseaudio.enable = true;
+  hardware.pulseaudio.package = pkgs.pulseaudioFull;
+  hardware.bluetooth.enable = true;
+
+  networking.hostName = "mayoi"; # Define your hostname.
+  networking.networkmanager.enable = true;
+
+  fonts = {
+    enableFontDir = true;
+    enableGhostscriptFonts = true;
+    fonts = with pkgs; [ source-code-pro ];
+  };
+
+  i18n = {
+    consoleFont = "Lat2-Terminus16";
+    consoleKeyMap = "fr";
+    defaultLocale = "en_US.UTF-8";
+  };
+
+  time.timeZone = "Europe/Paris";
+
+  environment.systemPackages = with pkgs; [
+    wget git dmenu feh i3 i3lock i3status fontconfig-ultimate
+    networkmanagerapplet openssl htop pasystray xorg.xbacklight
+    source-code-pro vim
+  ];
+
+  services.xserver.enable = true;
+  services.xserver.layout = "fr";
+  services.xserver.xkbOptions = "eurosign:e";
+
+  services.xserver.libinput.enable = true;
+  services.xserver.videoDrivers = [ "intel" ];
+
+  services.xserver.windowManager.i3 = {
+    enable = true;
+    extraSessionCommands = ''
+      ${pkgs.feh}/bin/feh  --bg-scale $HOME/.local/share/background-image
+      ${pkgs.pasystray}/bin/pasystray &amp;
+      ${pkgs.networkmanagerapplet}/bin/nm-applet &amp;
+    '';
+  };
+
+  services.fprintd.enable = true;
+
+  services.xserver.synaptics.palmDetect = true;
+  services.xserver.multitouch.ignorePalm = true;
+
+  services.redshift = {
+    enable = true;
+    latitude = "47.218371";
+    longitude = "-1.553621";
+  };
+
+  users.extraUsers.jtanguy = {
+    isNormalUser = true;
+    group = "users";
+    extraGroups = [ "wheel" "networkmanager" ];
+    home = "/home/jtanguy";
+    createHome = true;
+    uid = 1000;
+  };
+
+  # The NixOS release to be compatible with for stateful data such as databases.
+  system.stateVersion = "16.09";
+}</code></pre>
+</div>
+</div>
+</div>
+</div>]]></description><link>http://jtanguy.me/2017/03/19/Installing-NixOS-on-a-XPS-9560.html</link><guid isPermaLink="true">http://jtanguy.me/2017/03/19/Installing-NixOS-on-a-XPS-9560.html</guid><category><![CDATA[NixOS]]></category><dc:creator><![CDATA[Julien Tanguy]]></dc:creator><pubDate>Sun, 19 Mar 2017 00:00:00 GMT</pubDate></item></channel></rss>
